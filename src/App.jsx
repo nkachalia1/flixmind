@@ -202,20 +202,20 @@ export default function App() {
       
       {/* Dynamic Navbar */}
       <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
-        <div className="nav-brand" onClick={() => { setActiveTab("home"); setSearchQuery(""); }}>
+        <div className="nav-brand" onClick={() => { setActiveTab("home"); setSearchQuery(""); setActiveMovie(null); }}>
           Flix<span>Mind</span>
         </div>
         
         <ul className="nav-links">
           <li
             className={`nav-link ${activeTab === "home" ? "active" : ""}`}
-            onClick={() => { setActiveTab("home"); setSearchQuery(""); }}
+            onClick={() => { setActiveTab("home"); setSearchQuery(""); setActiveMovie(null); }}
           >
             Home Cinema
           </li>
           <li
             className={`nav-link ${activeTab === "explainer" ? "active" : ""}`}
-            onClick={() => setActiveTab("explainer")}
+            onClick={() => { setActiveTab("explainer"); setActiveMovie(null); setShowProfileSelector(false); }}
           >
             <Cpu size={14} style={{ display: "inline", marginRight: "4px", verticalAlign: "middle" }} />
             ML Insights

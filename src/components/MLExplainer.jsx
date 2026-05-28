@@ -21,9 +21,10 @@ export default function MLExplainer({
   // Load training history and calculate scatter positions for 16 distinct movies
   useEffect(() => {
     if (svdModel) {
-      setTrainingHistory(svdModel.trainingHistory || []);
-      setCurrentLoss(svdModel.trainingHistory[svdModel.trainingHistory.length - 1] || 0.42);
-      setEpochCount(svdModel.trainingHistory.length || 40);
+      const history = Array.isArray(svdModel.trainingHistory) ? svdModel.trainingHistory : [];
+      setTrainingHistory(history);
+      setCurrentLoss(history[history.length - 1] || 0.42);
+      setEpochCount(history.length || 40);
       
       // Select 16 representative movies from different genres to display in the 2D Latent space
       const representativeIds = [1, 2, 3, 6, 9, 11, 12, 16, 19, 21, 22, 26, 29, 31, 34, 36];
@@ -34,7 +35,7 @@ export default function MLExplainer({
 
   // Run live training animation
   const handleLiveTrain = () => {
-    if (isTraining) return;
+    if (isTraining || !svdModel || !ratingsList?.length) return;
     setIsTraining(true);
 
     let currentEpoch = 0;
@@ -70,10 +71,12 @@ export default function MLExplainer({
 
   // Get active user's current rating data list
   const getActiveUserRatings = () => {
-    return Object.entries(userRatings).map(([id, rating]) => {
-      const movie = movies.find(m => m.id === Number(id));
-      return { movie, rating };
-    });
+    return Object.entries(userRatings)
+      .map(([id, rating]) => {
+        const movie = movies.find(m => m.id === Number(id));
+        return movie ? { movie, rating } : null;
+      })
+      .filter(Boolean);
   };
 
   const activeRatings = getActiveUserRatings();
@@ -307,7 +310,7 @@ export default function MLExplainer({
                 >
                   {heatmapMovies.map((movieA) =>
                     heatmapMovies.map((movieB) => {
-                      const score = contentSimilarityMatrix[movieA.id]?.[movieB.id] || 0;
+                      const score = contentSimilarityMatrix?.[movieA.id]?.[movieB.id] || 0;
                       
                       // HSL color mappings: dark blue/gray for low, glowing primary red for high
                       // range of hue: 240 (blue) to 350 (red)
