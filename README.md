@@ -1,35 +1,28 @@
-# FlixMind 🎬
+# FlixMind
 
-[![Deploy to Render](https://render.com/images/deploy-to-render.svg)](https://render.com/deploy?repo=https://github.com/nkachalia1/flixmind)
+https://flixmind.onrender.com/
 
-**FlixMind** is a premium, cinematic Netflix-style movie streaming dashboard integrated with a fully functional, real-time client-side Machine Learning recommendation engine. It showcases advanced natural language processing (NLP) and collaborative filtering algorithms, combined with an interactive explainability dashboard that visualizes how recommendations are computed.
-
----
-
-## 🚀 Live Demo & Deployment
-
-- **Live URL**: [https://flixmind-ml.onrender.com](https://flixmind-ml.onrender.com) *(deployed via Render Static Sites)*
-- **One-Click Deploy**: Click the **Deploy to Render** button above to automatically fork and spin up your own instance of the project instantly.
+FlixMind is a cinematic Netflix-style movie streaming dashboard with a real-time, client-side machine learning recommendation engine. It combines natural language processing, collaborative filtering, and an interactive explainability dashboard that visualizes how recommendations are computed.
 
 ---
 
-## ✨ Features
+## Features
 
-1. **Cinematic Movie Portal**: A premium, responsive interface featuring horizontal carousels, detailed pop-up modals, and a dynamic hero banner showcasing matching titles.
+1. **Cinematic Movie Portal**: A responsive interface with horizontal carousels, detailed pop-up modals, and a dynamic hero banner showcasing matching titles.
 2. **Hybrid Recommendation Engine**:
-   - **Content-Based Filtering**: Written in pure JavaScript, it tokenizes movie synopses, filters out 60+ stop-words, and calculates a **TF-IDF matrix** over the corpus vocabulary.
+   - **Content-Based Filtering**: Tokenizes movie synopses, filters stop words, and calculates a TF-IDF matrix over the corpus vocabulary.
    - **Cosine Similarity**: Computes keyword alignment and Jaccard categorical intersections for genres, cast members, and directors.
-   - **Collaborative Filtering (SVD)**: Decomposes ratings into a 6-factor latent space. Utilizes **Stochastic Gradient Descent (SGD)** to minimize prediction bias and squared errors.
+   - **Collaborative Filtering (SVD)**: Decomposes ratings into a 6-factor latent space and uses stochastic gradient descent to minimize prediction errors.
 3. **ML Insights & Explainability Panel**:
    - **Taste Vectors**: Heatmaps illustrating user latent preferences across narrative dimensions.
-   - **SGD Live Optimizer**: Animate the model's training process over multiple epochs and observe the RMSE (Root Mean Square Error) decay curve in real-time.
-   - **Similarity Matrix Correlation**: Interactive 10x10 cosine similarity matrix with overlay tooltips.
-   - **2D Latent Vector Scatter Plot**: Projects items onto the principal latent dimensions to visualize spatial item clustering.
+   - **SGD Live Optimizer**: Animates model training across epochs and displays RMSE decay in real time.
+   - **Similarity Matrix Correlation**: Interactive cosine similarity matrix with overlay tooltips.
+   - **2D Latent Vector Scatter Plot**: Projects items onto principal latent dimensions to visualize clustering.
    - **Interactive NLP Scan**: Visualizes top-weighted TF-IDF terms for any selected movie.
 
 ---
 
-## 🛠️ Architecture & ML Implementation
+## Architecture
 
 ```mermaid
 graph TD
@@ -42,53 +35,64 @@ graph TD
     F --> A
 ```
 
-### Collaborative Filtering: Singular Value Decomposition (SVD)
+### Collaborative Filtering
+
 The collaborative algorithm projects users and items onto a shared latent feature space:
+
 $$\hat{R}_{u, i} = \mu + b_u + b_i + P_u \cdot Q_i$$
+
 Where:
+
 - $\mu$ is the global average rating.
 - $b_u$ and $b_i$ are the user and item biases.
 - $P_u$ and $Q_i$ are the user and item latent feature vectors.
 
-Parameters are optimized in the browser using **Stochastic Gradient Descent (SGD)**:
+Parameters are optimized in the browser using stochastic gradient descent:
+
 $$e_{u, i} = R_{u, i} - \hat{R}_{u, i}$$
+
 $$P_{uf} \leftarrow P_{uf} + \gamma (e_{u, i} Q_{if} - \lambda P_{uf})$$
+
 $$Q_{if} \leftarrow Q_{if} + \gamma (e_{u, i} P_{uf} - \lambda Q_{if})$$
 
 ---
 
-## 📦 Local Setup & Installation
+## Local Setup
 
-Follow these steps to run the application locally on your machine:
+1. **Clone the repository**:
 
-1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/nkachalia1/flixmind.git
+   git clone <repository>
    cd flixmind
    ```
 
-2. **Install Dependencies**:
+2. **Install dependencies**:
+
    ```bash
    npm install
    ```
 
-3. **Run the Development Server**:
+3. **Run the development server**:
+
    ```bash
    npm run dev
    ```
-   *The application will launch locally at `http://localhost:5173/`.*
 
-4. **Build for Production**:
+4. **Build for production**:
+
    ```bash
    npm run build
    ```
-   *Compiles the production-ready assets into the `dist/` folder.*
+
+The production-ready assets are generated in the `dist` folder.
 
 ---
 
-## 🎨 UI Design System
-Built using custom **Vanilla CSS** (located in `src/index.css`) containing:
-- Vibrant, curated **HSL color spaces** (sleek dark mode base with primary glowing indicators).
-- **Glassmorphic** overlay components using visual blur filters.
-- Fluid, responsive carousels and details panel grids.
-- Hover scale-zoom indicators for cinematic movie card selection.
+## UI Design System
+
+Built with custom CSS in `src/index.css`, including:
+
+- Curated HSL color spaces with a dark cinematic base and glowing indicators.
+- Glass-style overlay components using visual blur filters.
+- Fluid responsive carousels and details panel grids.
+- Hover scale indicators for cinematic movie card selection.
