@@ -1,0 +1,7 @@
+# Render Deployment Blueprint for FlixMind Static Site
+services:
+  - type: web
+    name: flixmind-ml
+    env: static
+    buildCommand: npm run build
+    publishPath: dist
