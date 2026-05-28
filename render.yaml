@@ -4,4 +4,4 @@ services:
     name: flixmind-ml
     env: static
     buildCommand: npm run build
-    publishPath: dist
+    publishDir: dist
