@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Sparkles, BarChart2, Award, Zap, RefreshCw, Cpu, Activity, Info } from "lucide-react";
+import { Sparkles, BarChart2, Award, Zap, RefreshCw, Cpu, Activity, Info, Star } from "lucide-react";
 
 export default function MLExplainer({
   movies,
