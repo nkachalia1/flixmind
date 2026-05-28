@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Sparkles, Cpu, Search, X, Star, ThumbsUp, ThumbsDown } from "lucide-react";
 import { MOVIES_DATA, INITIAL_RATINGS } from "./data/moviesData";
 import { computeContentSimilarities, SVDRecommender, generateHybridRecommendations } from "./ml/mlEngine";
@@ -32,13 +32,11 @@ export default function App() {
     similarityMatrix: null,
     tfidfModel: null,
     svdModel: null,
+    seedRatingsList: [],
     flatRatingsList: []
   });
 
   const [recommendations, setRecommendations] = useState([]);
-  
-  // Create static ref for SVD model to ensure single instance
-  const svdRef = useRef(null);
 
   // Monitor scroll for navbar styles
   useEffect(() => {
@@ -81,20 +79,20 @@ export default function App() {
     // C. Instantiate and Train SVD Collaborative filtering model
     const svd = new SVDRecommender(userIds.size, itemIds.length, 6, 0.015, 0.02);
     svd.fit(flatRatings, Array.from(userIds), itemIds, 40);
-    svdRef.current = svd;
 
     // Save references to State
     setMlData({
       similarityMatrix: matrix,
       tfidfModel: tfidf,
       svdModel: svd,
+      seedRatingsList: flatRatings,
       flatRatingsList: flatRatings
     });
   }, []);
 
   // 2. Regenerate recommendations whenever user ratings or active profile changes
   useEffect(() => {
-    if (!mlData.similarityMatrix || !svdRef.current) return;
+    if (!mlData.similarityMatrix || !mlData.seedRatingsList.length) return;
 
     // Build the total ratings array inclusive of current user's active ratings
     const currentUserRatingsList = Object.entries(userRatings).map(([mId, score]) => ({
@@ -104,13 +102,17 @@ export default function App() {
     }));
 
     // Combine history ratings with current active user ratings
-    const combinedRatings = [...mlData.flatRatingsList].filter(r => r.userId !== activeUser.id);
+    const combinedRatings = [...mlData.seedRatingsList].filter(r => r.userId !== activeUser.id);
     combinedRatings.push(...currentUserRatingsList);
 
-    // Incrementally fit SVD model on user's newly input ratings
-    if (currentUserRatingsList.length > 0) {
-      svdRef.current.fit(combinedRatings, [activeUser.id, ...Object.keys(INITIAL_RATINGS).map(Number)], MOVIES_DATA.map(m => m.id), 10);
+    // Rebuild the SVD model from one consistent ratings snapshot.
+    const userIds = Object.keys(INITIAL_RATINGS).map(Number);
+    if (!userIds.includes(activeUser.id)) {
+      userIds.push(activeUser.id);
     }
+    const itemIds = MOVIES_DATA.map(m => m.id);
+    const svd = new SVDRecommender(userIds.length, itemIds.length, 6, 0.015, 0.02);
+    svd.fit(combinedRatings, userIds, itemIds, currentUserRatingsList.length > 0 ? 40 : 20);
 
     const hybridRecs = generateHybridRecommendations({
       activeUserId: activeUser.id,
@@ -118,12 +120,17 @@ export default function App() {
       allMovies: MOVIES_DATA,
       ratingsDatabase: combinedRatings,
       similarityMatrix: mlData.similarityMatrix,
-      svdModel: svdRef.current,
+      svdModel: svd,
       contentWeight: 0.35 // weights: 35% content NLP overlap, 65% SVD user preferences
     });
 
+    setMlData(prev => ({
+      ...prev,
+      svdModel: svd,
+      flatRatingsList: combinedRatings
+    }));
     setRecommendations(hybridRecs);
-  }, [userRatings, activeUser, mlData.similarityMatrix, mlData.flatRatingsList]);
+  }, [userRatings, activeUser, mlData.similarityMatrix, mlData.seedRatingsList]);
 
   // 3. Switch Profile Persona Action
   const handleSelectProfile = (profileId) => {
@@ -164,21 +171,6 @@ export default function App() {
         updated[movieId] = score;
       }
       return updated;
-    });
-
-    // Update active flat ratings database representation in SVD coordinates
-    setMlData(prev => {
-      const updatedList = prev.flatRatingsList.filter(
-        r => !(r.userId === activeUser.id && r.itemId === movieId)
-      );
-      if (score > 0) {
-        updatedList.push({
-          userId: activeUser.id,
-          itemId: movieId,
-          rating: score
-        });
-      }
-      return { ...prev, flatRatingsList: updatedList };
     });
   };
 
@@ -257,13 +249,13 @@ export default function App() {
           activeUser={activeUser}
         />
       ) : (
-        mlData.similarityMatrix && svdRef.current && (
+        mlData.similarityMatrix && mlData.svdModel && (
           <MLExplainer
             movies={MOVIES_DATA}
             activeUser={activeUser}
             userRatings={userRatings}
             ratingsList={mlData.flatRatingsList}
-            svdModel={svdRef.current}
+            svdModel={mlData.svdModel}
             contentSimilarityMatrix={mlData.similarityMatrix}
             tfidfModel={mlData.tfidfModel}
           />
